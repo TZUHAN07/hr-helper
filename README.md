@@ -1,20 +1,42 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# HR Event Toolkit Pro
 
-# Run and deploy your AI Studio app
+協助 HR 生產力工具專案。
 
-This contains everything you need to run your app locally.
+## Getting Started
 
-View your app in AI Studio: https://ai.studio/apps/drive/1ITTWJQ6OtaRB-fskr1v9MD_ljvXgo6yu
+### Prerequisites
 
-## Run Locally
+- Node.js (v18 or higher recommended)
+- npm
 
-**Prerequisites:**  Node.js
-
+### Installation
 
 1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Build for production:
+   ```bash
+   npm run build
+   ```
+
+## Deployment
+
+This project is configured to deploy automatically to **GitHub Pages** using GitHub Actions.
+
+### Setup
+
+1. Go to your repository **Settings**.
+2. Navigate to **Pages** (under the "Code and automation" section).
+3. Under **Build and deployment**, select **GitHub Actions** as the Source.
+4. The workflow defined in `.github/workflows/deploy.yml` will automatically build and deploy your site on every push to the `main` branch.
+
+### Manual Deployment (Optional)
+
+You can also build the project locally and deploy the `dist` folder manually if needed.

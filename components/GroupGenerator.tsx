@@ -14,34 +14,53 @@ const GroupGenerator: React.FC<Props> = ({ participants }) => {
   const generateGroups = () => {
     const shuffled = [...participants].sort(() => Math.random() - 0.5);
     const newGroups: Group[] = [];
-    
+
     for (let i = 0; i < shuffled.length; i += groupSize) {
       newGroups.push({
         id: (i / groupSize) + 1,
         members: shuffled.slice(i, i + groupSize)
       });
     }
-    
+
     setGroups(newGroups);
   };
 
   const exportToCSV = () => {
     if (groups.length === 0) return;
 
-    let csvContent = "data:text/csv;charset=utf-8,組別,姓名\n";
+    // Build CSV content
+    const headers = ["組別", "姓名"];
+    const rows: string[] = [];
+
     groups.forEach(group => {
       group.members.forEach(member => {
-        csvContent += `第 ${group.id} 組,${member.name}\n`;
+        // Handle potential commas in names by wrapping in quotes if needed, 
+        // though for simple names this is often overkill, good practice nonetheless.
+        const safeName = member.name.includes(',') ? `"${member.name}"` : member.name;
+        rows.push(`第 ${group.id} 組,${safeName}`);
       });
     });
 
-    const encodedUri = encodeURI(csvContent);
+    const csvContent = [headers.join(","), ...rows].join("\n");
+
+    // Create Blob with BOM (\uFEFF) for correct Chinese display in Excel
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `分組名單_${new Date().toLocaleDateString()}.csv`);
+    link.href = url;
+
+    // Sanitize date string to remove slashes (which are invalid in filenames)
+    // e.g., "2024/01/01" -> "2024-01-01"
+    const dateStr = new Date().toLocaleDateString().replace(/\//g, "-");
+    link.download = `分組名單_${dateStr}.csv`;
+
     document.body.appendChild(link);
     link.click();
+
+    // Cleanup
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -54,11 +73,11 @@ const GroupGenerator: React.FC<Props> = ({ participants }) => {
         <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-gray-400 uppercase">每組人數</span>
-            <input 
-              type="number" 
-              min="2" 
+            <input
+              type="number"
+              min="2"
               max={participants.length}
-              value={groupSize} 
+              value={groupSize}
               onChange={(e) => setGroupSize(parseInt(e.target.value) || 2)}
               className="w-16 bg-transparent text-lg font-bold text-indigo-600 outline-none"
             />
@@ -108,20 +127,20 @@ const GroupGenerator: React.FC<Props> = ({ participants }) => {
 
       {groups.length > 0 && (
         <div className="flex justify-center gap-6 pt-8 border-t border-gray-100">
-           <button 
-             onClick={exportToCSV}
-             className="text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all border border-indigo-100 shadow-sm"
-           >
-             <FileSpreadsheet className="w-5 h-5" />
-             下載 CSV 紀錄
-           </button>
-           <button 
-             onClick={() => window.print()} 
-             className="text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all border border-gray-200 shadow-sm"
-           >
-             <Printer className="w-5 h-5" />
-             列印分組結果
-           </button>
+          <button
+            onClick={exportToCSV}
+            className="text-indigo-600 hover:bg-indigo-50 px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all border border-indigo-100 shadow-sm"
+          >
+            <FileSpreadsheet className="w-5 h-5" />
+            下載 CSV 紀錄
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="text-gray-600 hover:bg-gray-50 px-6 py-3 rounded-xl flex items-center gap-2 font-bold transition-all border border-gray-200 shadow-sm"
+          >
+            <Printer className="w-5 h-5" />
+            列印分組結果
+          </button>
         </div>
       )}
     </div>
